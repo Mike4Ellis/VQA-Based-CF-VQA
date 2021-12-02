@@ -42,11 +42,12 @@ class SMRLNet(nn.Module):
         self.residual = residual
         
         # Modules
+        # 返回文本编码器
         self.txt_enc = self.get_text_enc(self.wid_to_word, txt_enc)
         if self.self_q_att:
             self.q_att_linear0 = nn.Linear(2400, 512)
             self.q_att_linear1 = nn.Linear(512, 2)
-
+        # 对question-only单独创建编码器
         if q_single:
             self.txt_enc_single = self.get_text_enc(self.wid_to_word, txt_enc)
             if self.self_q_att:
@@ -55,19 +56,22 @@ class SMRLNet(nn.Module):
         else:
             self.txt_enc_single = None
 
+        # 根据fusion['type']参数类型 返回对应的fusion层 比如Block
         self.fusion_module = block.factory_fusion(self.fusion)
 
+        # 分类层最后输出维度 应与 可用答案个数 相同
         if self.classif['mlp']['dimensions'][-1] != len(self.aid_to_ans):
             Logger()(f"Warning, the classif_mm output dimension ({self.classif['mlp']['dimensions'][-1]})" 
              f"doesn't match the number of answers ({len(self.aid_to_ans)}). Modifying the output dimension.")
             self.classif['mlp']['dimensions'][-1] = len(self.aid_to_ans) 
-
+        # 分类层
         self.classif_module = MLP(**self.classif['mlp'])
 
+        # 打印 可学习参数数量总和
         Logger().log_value('nparams',
             sum(p.numel() for p in self.parameters() if p.requires_grad),
             should_print=True)
-
+        # 打印 文本编码器 可学习参数数量总和
         Logger().log_value('nparams_txt_enc',
             self.get_nparams_txt_enc(),
             should_print=True)
@@ -87,9 +91,15 @@ class SMRLNet(nn.Module):
         return sum(params)
 
     def process_fusion(self, q, mm):
+        '''
+        处理多模态融合
+        mm: 图像特征
+        q: 问题
+        '''
         bsize = mm.shape[0]
         n_regions = mm.shape[1]
 
+        # 将batch_size和目标区域 压平成一维
         mm = mm.contiguous().view(bsize*n_regions, -1)
         mm = self.fusion_module([q, mm])
         mm = mm.view(bsize, n_regions, -1)
@@ -134,14 +144,19 @@ class SMRLNet(nn.Module):
         return out
 
     def process_question(self, q, l, txt_enc=None, q_att_linear0=None, q_att_linear1=None):
+        '''
+        处理问题
+        '''
         if txt_enc is None:
             txt_enc = self.txt_enc
         if q_att_linear0 is None:
             q_att_linear0 = self.q_att_linear0
         if q_att_linear1 is None:
             q_att_linear1 = self.q_att_linear1
+        # 使用文本编码器 进行词嵌入
         q_emb = txt_enc.embedding(q)
 
+        # 使用文本编码器 进行RNN编码
         q, _ = txt_enc.rnn(q_emb)
 
         if self.self_q_att:
@@ -174,6 +189,9 @@ class SMRLNet(nn.Module):
         return q
 
     def process_answers(self, out, key=''):
+        '''
+        处理答案
+        '''
         batch_size = out[f'logits{key}'].shape[0]
         _, pred = out[f'logits{key}'].data.max(1)
         pred.squeeze_()

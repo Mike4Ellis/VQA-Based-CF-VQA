@@ -14,6 +14,11 @@ class RUBiNet(nn.Module):
         - logits_rubi: the updated predictions from the model by the mask.
     => Use `logits_rubi` and `logits_q` for the loss
     """
+    '''
+    - logits: 模型原预测结果
+    - logits_q: question-only分支预测结果
+    - logits_rubi: 模型mask后新预测结果
+    '''
     def __init__(self, model, output_size, classif, end_classif=True):
         super().__init__()
         self.net = model
@@ -24,15 +29,22 @@ class RUBiNet(nn.Module):
 
     def forward(self, batch):
         out = {}
-        # model prediction
+        # 模型预测结果
+        # 其中'logits'对应模型原预测结果
+        # 'q_emb'对应问题编码
         net_out = self.net(batch)
         logits = net_out['logits']
-
+        # 问题编码 对应论文e_q
         q_embedding = net_out['q_emb']  # N * q_emb
+        # 阻止nn_q到e_q的反向传播
+        # 自定义函数 使backward()时梯度*0 得梯度为0
         q_embedding = grad_mul_const(q_embedding, 0.0) # don't backpropagate through question encoder
+        # MLP处理 对应论文nn_q
         q_pred = self.c_1(q_embedding)
+        # mask操作
         fusion_pred = logits * torch.sigmoid(q_pred)
-
+        
+        # 是否添加最后的分类层 对应论文c_q 
         if self.end_classif:
             q_out = self.c_2(q_pred)
         else:

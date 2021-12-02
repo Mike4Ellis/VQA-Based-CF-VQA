@@ -71,11 +71,13 @@ class GradMulConst(torch.autograd.Function):
     """
     @staticmethod
     def forward(ctx, x, const):
+        # 前向传播 什么也不做
         ctx.const = const
         return x.view_as(x)
 
     @staticmethod
     def backward(ctx, grad_output):
+        # 反向传播 直接将梯度*const(设为0)
         return grad_output * ctx.const, None
 
 def grad_mul_const(x, const):
