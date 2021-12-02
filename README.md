@@ -1,24 +1,7 @@
 <<<<<<< HEAD
-# Counterfactual VQA (CF-VQA)
+# VQA-Based-CF-VQA
+This repository is the Pytorch implementation of various VQA models. This code is implemented as a fork of CF-VQA.
 
-This repository is the Pytorch implementation of our paper ["Counterfactual VQA: A Cause-Effect Look at Language Bias"](https://arxiv.org/abs/2006.04315) in CVPR 2021. This code is implemented as a fork of [RUBi][1].
-
-CF-VQA is proposed to capture and mitigate language bias in VQA from the view of causality. CF-VQA (1) captures the language bias as the direct causal effect of questions on answers, and (2) reduces the language bias by subtracting the direct language effect from the total causal effect.
-
-<p align="center">
-    <img src="assets/cfvqa.png" />
-</p>
-
-
-If you find this paper helps your research, please kindly consider citing our paper in your publications.
-```
-@inproceedings{niu2020counterfactual,
-  title={Counterfactual VQA: A Cause-Effect Look at Language Bias},
-  author={Niu, Yulei and Tang, Kaihua and Zhang, Hanwang and Lu, Zhiwu and Hua, Xian-Sheng and Wen, Ji-Rong},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  year={2021}
-}
-```
 ## Summary
 
 * [Installation](#installation)
@@ -28,7 +11,6 @@ If you find this paper helps your research, please kindly consider citing our pa
     * [Train a model](#train-a-model)
     * [Evaluate a model](#evaluate-a-model)
 * [Useful commands](#useful-commands)
-* [Acknowledgment](#acknowledgment)
 
 ## Installation
 
@@ -119,17 +101,3 @@ If a problem occurs, it is easy to resume the last epoch by specifying the optio
 python -m bootstrap.run -o logs/vqacp2/smrl_cfvqa_sum/options.yaml \
 --exp.resume last
 ```
-
-
-## Acknowledgment
-
-Special thanks to the authors of [RUBi][1], [BLOCK][2], and [bootstrap.pytorch][3], and the datasets used in this research project.
-
-
-[1]: https://github.com/cdancette/rubi.bootstrap.pytorch
-[2]: https://github.com/Cadene/block.bootstrap.pytorch
-[3]: https://github.com/Cadene/bootstrap.pytorch
-=======
-# VQA-Based-CF-VQA
-This repository is the Pytorch implementation of various VQA models. This code is implemented as a fork of CF-VQA.
->>>>>>> a45a9918b554c3540039b5c408664401a5b5bc1c
